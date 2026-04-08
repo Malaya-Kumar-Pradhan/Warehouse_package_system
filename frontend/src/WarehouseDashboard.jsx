@@ -9,8 +9,8 @@ export default function WarehouseDashboard() {
   const fetchData = async () => {
     try {
       const [capRes, packRes] = await Promise.all([
-        fetch('http://localhost:4000/api/capacity'),
-        fetch('http://localhost:4000/api/packages')
+        fetch('https://warehouse-package-system.onrender.com/api/capacity'),
+        fetch('https://warehouse-package-system.onrender.com/api/packages')
       ]);
       
       setCapacities(await capRes.json());
@@ -27,7 +27,7 @@ export default function WarehouseDashboard() {
   // Add Package
   const addPackage = async (size_type) => {
     setError('');
-    const response = await fetch('http://localhost:4000/api/packages', { 
+    const response = await fetch('https://warehouse-package-system.onrender.com/api/packages', { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ size_type })
@@ -44,7 +44,7 @@ export default function WarehouseDashboard() {
   // Remove Package
   const removePackage = async (id) => {
     setError('');
-    const response = await fetch(`http://localhost:4000/api/packages/${id}`, { 
+    const response = await fetch(`https://warehouse-package-system.onrender.com/api/packages/${id}`, { 
       method: 'DELETE'
     });
 
