@@ -27,7 +27,6 @@ export default function WarehouseDashboard() {
   // Add Package
   const addPackage = async (size_type) => {
     setError('');
-    // FIXED: Added http://localhost:4000 here
     const response = await fetch('http://localhost:4000/api/packages', { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -38,14 +37,13 @@ export default function WarehouseDashboard() {
       const errData = await response.json();
       setError(errData.message);
     } else {
-      fetchData(); // Refresh UI if successful
+      fetchData(); 
     }
   };
 
   // Remove Package
   const removePackage = async (id) => {
     setError('');
-    // FIXED: Added http://localhost:4000 here
     const response = await fetch(`http://localhost:4000/api/packages/${id}`, { 
       method: 'DELETE'
     });
@@ -54,7 +52,7 @@ export default function WarehouseDashboard() {
       const errData = await response.json();
       setError(errData.message);
     } else {
-      fetchData(); // Refresh UI to show freed space
+      fetchData(); 
     }
   };
 
@@ -64,7 +62,6 @@ export default function WarehouseDashboard() {
       
       {error && <div style={{ color: 'red', marginBottom: '10px', padding: '10px', background: '#ffe6e6', borderRadius: '5px' }}>{error}</div>}
 
-      {/* Capacity Dashboard */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
         {capacities.map((item) => (
           <div key={item.size_type} style={{ flex: 1, border: '1px solid #ccc', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
@@ -81,7 +78,6 @@ export default function WarehouseDashboard() {
         ))}
       </div>
 
-      {/* Package History / Removal List */}
       <h2>📝 Current Packages in Warehouse</h2>
       {packages.length === 0 ? (
         <p>The warehouse is currently empty.</p>
