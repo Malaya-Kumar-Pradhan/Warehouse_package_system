@@ -7,12 +7,36 @@ app.use(express.json());
 app.use(cors());
 
 // 1. Setup MySQL Connection Pool
+
 const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "ShivRambhaktmkp@123", // Make sure this matches your MySQL setup
-  database: "warehouse_system",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
+
+const warehouseTable = `
+CREATE TABLE IF NOT EXISTS Warehouse_Capacity (
+    size_type VARCHAR(10) PRIMARY KEY, -- 'Small', 'Medium', 'Large'
+    max_capacity INT NOT NULL
+);
+`
+pool.query(warehouseTable)
+
+const insertCapacity = `
+INSERT INTO Warehouse_Capacity (size_type, max_capacity) 
+VALUES ('Small', 100), ('Medium', 50), ('Large', 20);
+`
+pool.query(insertCapacity)
+
+const packagesTable = `
+CREATE TABLE IF NOT EXISTS Packages (
+    package_id SERIAL PRIMARY KEY,
+    size_type VARCHAR(10) REFERENCES Warehouse_Capacity(size_type),
+    stored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+`
+pool.query(packagesTable)
 
 // 2. View Capacity
 app.get("/api/capacity", async (req, res) => {
@@ -71,7 +95,7 @@ app.post('/api/packages', async (req, res) => {
         const insertQuery = `INSERT INTO packages (size_type) VALUES (?)`;
         const [result] = await connection.query(insertQuery, [size_type]);
 
-        // MySQL returns the new ID as "insertId" (instead of lastID in SQLite)
+        // MySQL returns the new ID as "insertId"
         const [newPackage] = await connection.query(`SELECT * FROM packages WHERE package_id = ?`, [result.insertId]);
 
         await connection.commit();
@@ -112,6 +136,8 @@ app.delete('/api/packages/:id', async (req, res) => {
 });
 
 // 6. Start the Server (You were missing this at the bottom!)
-app.listen(4000, () => {
-    console.log('🚀 MySQL Backend Server Running on port 4000');
+const PORT = process.env.PORT || 4000; 
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server Running on port ${PORT}`);
 });
