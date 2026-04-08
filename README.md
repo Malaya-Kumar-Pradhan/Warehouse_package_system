@@ -37,4 +37,37 @@ Built with **React**, **Node.js**, **Express**, and **MySQL**, this project heav
    ```bash
    npm install express cors mysql2
    ```
-   
+3. Set up your environment variables. You can create a .env file or export them directly in your terminal:
+* DB_HOST (e.g., localhost)
+* DB_USER (e.g., root)
+* DB_PASSWORD (your MySQL password)
+* DB_NAME (e.g., warehouse_system)
+* PORT (defaults to 4000)
+
+4. Start the server:
+   ```bash
+   node server.js
+   ```
+Note: The server will automatically create the required warehouse_capacity and packages tables and seed the initial limits if they do not exist.
+
+### 2. Frontend Setup
+1. Open a separate terminal and navigate to your React frontend directory.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the React development server:
+   ```bash
+   npm start
+   ```
+4. Open your browser and navigate to http://localhost:3000 (or the port specified by your bundler).
+
+# 📡 API Endpoints
+
+| Method | Endpoint              | Description                                                                 | Body / Params                  |
+|--------|-----------------------|-----------------------------------------------------------------------------|--------------------------------|
+| GET    | `/api/capacity`       | Fetches total capacity, current count, and available space for all sizes.   | None                           |
+| GET    | `/api/packages`       | Fetches a chronological list of all stored packages.                        | None                           |
+| POST   | `/api/packages`       | Attempts to add a new package. Rejects if the size capacity is full.        | `{ "size_type": "Small" }`     |
+| DELETE | `/api/packages/:id`   | Removes a specific package by ID and frees up space.                        | `id` in URL params             |
+
