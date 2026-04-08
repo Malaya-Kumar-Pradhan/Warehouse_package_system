@@ -7,7 +7,6 @@ app.use(express.json());
 app.use(cors());
 
 // 1. Setup MySQL Connection Pool
-
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -15,28 +14,41 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
 });
 
-const warehouseTable = `
-CREATE TABLE IF NOT EXISTS Warehouse_Capacity (
-    size_type VARCHAR(10) PRIMARY KEY, -- 'Small', 'Medium', 'Large'
-    max_capacity INT NOT NULL
-);
-`
-pool.query(warehouseTable)
+// Safe Database Initialization
+const initializeDB = async () => {
+  try {
+    // Create Capacity Table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS warehouse_capacity (
+        size_type VARCHAR(10) PRIMARY KEY,
+        max_capacity INT NOT NULL
+      );
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS packages (
+        package_id INT AUTO_INCREMENT PRIMARY KEY,
+        size_type VARCHAR(10),
+        stored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (size_type) REFERENCES warehouse_capacity(size_type)
+      );
+    `);
+    const [rows] = await pool.query("SELECT COUNT(*) as count FROM warehouse_capacity");
+    if (rows[0].count === 0) {
+      await pool.query(`
+        INSERT INTO warehouse_capacity (size_type, max_capacity) 
+        VALUES ('Small', 100), ('Medium', 50), ('Large', 20);
+      `);
+      console.log("Database seeded with initial capacities!");
+    } else {
+      console.log("Database already initialized.");
+    }
+  } catch (err) {
+    console.error("Failed to initialize database:", err.message);
+  }
+};
 
-const insertCapacity = `
-INSERT INTO Warehouse_Capacity (size_type, max_capacity) 
-VALUES ('Small', 100), ('Medium', 50), ('Large', 20);
-`
-pool.query(insertCapacity)
-
-const packagesTable = `
-CREATE TABLE IF NOT EXISTS Packages (
-    package_id SERIAL PRIMARY KEY,
-    size_type VARCHAR(10) REFERENCES Warehouse_Capacity(size_type),
-    stored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-`
-pool.query(packagesTable)
+// Run the initialization
+initializeDB();
 
 // 2. View Capacity
 app.get("/api/capacity", async (req, res) => {
